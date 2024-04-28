@@ -89,10 +89,19 @@ let g_selectedType = POINT;
 let g_globalAngle = 0;
 let g_yellowAngle = 0;
 let g_magentaAngle = 0;
+let g_yellowAnimation = false;
+let g_magentaAnimation = false;
 
 // Set up actions for the HTML UI elements
 function addActionsforHTMLUI() {
 
+    // Animation On/Off
+    document.getElementById('animationYellowOffButton').onclick = function() { g_yellowAnimation = false; };
+    document.getElementById('animationYellowOnButton').onclick = function() { g_yellowAnimation = true; };
+
+    document.getElementById('animationMagentaOffButton').onclick = function() { g_magentaAnimation = false; };
+    document.getElementById('animationMagentaOnButton').onclick = function() { g_magentaAnimation = true; };
+    
     // Clear
     document.getElementById('clear').onclick = function() { g_shapesList = []; renderAllShapes() };
 
@@ -102,9 +111,9 @@ function addActionsforHTMLUI() {
     document.getElementById('circle').onclick = function() { g_selectedType = CIRCLE };
 
     // Color slider events
-    document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value/100; });
-    document.getElementById('greenSlide').addEventListener('mouseup', function() { g_selectedColor[1] = this.value/100; });
-    document.getElementById('blueSlide').addEventListener('mouseup', function() { g_selectedColor[2] = this.value/100; });
+    // document.getElementById('redSlide').addEventListener('mouseup', function() { g_selectedColor[0] = this.value/100; });
+    // document.getElementById('greenSlide').addEventListener('mouseup', function() { g_selectedColor[1] = this.value/100; });
+    // document.getElementById('blueSlide').addEventListener('mouseup', function() { g_selectedColor[2] = this.value/100; });
 
     // Size slider
     document.getElementById('rotateYellow').addEventListener('mousemove', function () { g_yellowAngle = this.value; renderAllShapes() });
@@ -133,13 +142,25 @@ function main() {
 }
 
 var g_startTime = performance.now()/1000;
-var g_seconds = performance.now()/1000 - g_globalAngle-g_startTime;
+var g_seconds = performance.now()/1000 - g_startTime;
 
 function tick() {
-    g_seconds = performance.now()/1000 - g_globalAngle-g_startTime;
+    g_seconds = (performance.now()/1000) - g_startTime;
+    updateAnimationAngles();
     console.log(g_seconds);
     renderAllShapes();
     requestAnimationFrame(tick);
+}
+
+function updateAnimationAngles() {
+    if (g_yellowAnimation) {
+        g_yellowAngle = (45 * Math.sin(g_seconds));
+    }
+
+    if (g_magentaAnimation) {
+        g_magentaAngle = (45 * Math.sin(3 * g_seconds));
+      }
+
 }
 
 function renderAllShapes() {
@@ -160,25 +181,26 @@ function renderAllShapes() {
     body.matrix.scale(0.5, 0.3, 0.5);
     body.render();
 
-    var leftArm = new Cube();
-    leftArm.color = [1, 1, 0, 1];
-    leftArm.matrix.setTranslate(0, -0.5, 0.0);
-    leftArm.matrix.rotate(-5, 1, 0, 0);
-    leftArm.matrix.rotate(g_yellowAngle, 0, 0, 1);
-    var yellowCoordinatesMat = new Matrix4(leftArm.matrix);
-    leftArm.matrix.scale(0.25, 0.7, 0.5);
-    leftArm.matrix.translate(-0.5, 0, 0);
-    leftArm.render();
+    var yellow = new Cube();
+    yellow.color = [1, 1, 0, 1];
+    yellow.matrix.setTranslate(0, -0.5, 0.0);
+    yellow.matrix.rotate(-5, 1, 0, 0);
+    yellow.matrix.rotate(-g_yellowAngle, 0, 0, 1);
+    // yellow.matrix.rotate(45*Math.sin(g_seconds), 0, 0, 1);
+    var yellowCoordinatesMat = new Matrix4(yellow.matrix);
+    yellow.matrix.scale(0.25, 0.7, 0.5);
+    yellow.matrix.translate(-0.5, 0, 0);
+    yellow.render();
 
     // Test cube
-    var box = new Cube();
-    box.color = [1,0,1,1];
-    box.matrix = yellowCoordinatesMat;
-    box.matrix.translate(0, 0.65, 0);
-    box.matrix.rotate(g_magentaAngle,0,0,1);
-    box.matrix.scale(0.3, 0.3, 0.3);
-    box.matrix.translate(-0.5, 0, 0);
-    box.render();
+    var magenta = new Cube();
+    magenta.color = [1,0,1,1];
+    magenta.matrix = yellowCoordinatesMat;
+    magenta.matrix.translate(0, 0.65, 0);
+    magenta.matrix.rotate(-g_magentaAngle,0,0,1);
+    magenta.matrix.scale(0.3, 0.3, 0.3);
+    magenta.matrix.translate(-0.5, 0, 0);
+    magenta.render();
 }
 
 var g_shapesList = [];
