@@ -138,19 +138,19 @@ function main() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     // renderAllShapes();
-    requestAnimationFrame(tick);
+    // requestAnimationFrame(tick);
 }
 
-var g_startTime = performance.now()/1000;
-var g_seconds = performance.now()/1000 - g_startTime;
+// var g_startTime = performance.now()/1000;
+// var g_seconds = performance.now()/1000 - g_startTime;
 
-function tick() {
-    g_seconds = (performance.now()/1000) - g_startTime;
-    updateAnimationAngles();
-    console.log(g_seconds);
-    renderAllShapes();
-    requestAnimationFrame(tick);
-}
+// function tick() {
+//     g_seconds = (performance.now()/1000) - g_startTime;
+//     updateAnimationAngles();
+//     console.log(g_seconds);
+//     renderAllShapes();
+//     requestAnimationFrame(tick);
+// }
 
 function updateAnimationAngles() {
     if (g_yellowAnimation) {
@@ -170,37 +170,70 @@ function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    // Draw a test triangle
-    // drawTriangle3D( [1.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0] );
+    // Colors
 
-    // Body cube
+
+    // Bunny head
+
+    var head = new Cube();
+    head.color = [1, 1, 0, 1];
+    head.matrix.scale(0.4, 0.4, 0.4);
+    head.matrix.translate(-0.5, 0, -2.125);
+    // head.matrix.rotate(-g_yellowAngle, 1, 1, 0);
+    head.render();
+
+    // Ears
+    var ear1 = new Cube();
+    ear1.color = [1, 1, 0, 1];
+    ear1.matrix.scale(0.1, 0.6, 0.1);
+    ear1.matrix.translate(-1.5, 0.25, -5.5);
+    // rotate slightly
+    ear1.render();
+
+    var ear2 = new Cube();
+    ear2.color = [1, 1, 0, 1];
+    ear2.matrix.scale(0.1, 0.6, 0.1);
+    ear2.matrix.translate(0.5, 0.25, -5.5);
+    // rotate slightly
+    ear2.render();
+
+    
+    // Body
+
     var body = new Cube();
-    body.color = [1.0, 0.0, 0.0, 1.0];
-    body.matrix.translate(-0.25, -0.75, 0.0);
-    body.matrix.rotate(-5, 1, 0, 0);
-    body.matrix.scale(0.5, 0.3, 0.5);
+    body.color = [1, 1, 0, 1];
+    body.matrix.scale(0.5, 0.4, 0.8);
+    body.matrix.translate(-0.5, -1, -1);
+    body.matrix.rotate(20, 1, 0, 0);
+    // body.matrix.setTranslate(0, -0.5, 0.0);
+    // body.matrix.rotate(-5, 1, 0, 0);
+    // body.matrix.rotate(-g_yellowAngle, 0, 0, 1);
+    // body.matrix.rotate(45*Math.sin(g_seconds), 0, 0, 1);
+    // var yellowCoordinatesMat = new Matrix4(body.matrix);
+    // body.matrix.scale(0.25, 0.7, 0.5);
+    // body.matrix.translate(-0.5, 0, 0);
     body.render();
 
-    var yellow = new Cube();
-    yellow.color = [1, 1, 0, 1];
-    yellow.matrix.setTranslate(0, -0.5, 0.0);
-    yellow.matrix.rotate(-5, 1, 0, 0);
-    yellow.matrix.rotate(-g_yellowAngle, 0, 0, 1);
-    // yellow.matrix.rotate(45*Math.sin(g_seconds), 0, 0, 1);
-    var yellowCoordinatesMat = new Matrix4(yellow.matrix);
-    yellow.matrix.scale(0.25, 0.7, 0.5);
-    yellow.matrix.translate(-0.5, 0, 0);
-    yellow.render();
+
+    
+    // var notbody = new Cube();
+    // notbody.color = [1.0, 0.0, 0.0, 1.0];
+    // notbody.matrix.translate(-0.25, -0.75, 0.0);
+    // notbody.matrix.rotate(-5, 1, 0, 0);
+    // notbody.matrix.scale(0.5, 0.3, 0.5);
+    // notbody.render();
+
+    
 
     // Test cube
-    var magenta = new Cube();
-    magenta.color = [1,0,1,1];
-    magenta.matrix = yellowCoordinatesMat;
-    magenta.matrix.translate(0, 0.65, 0);
-    magenta.matrix.rotate(-g_magentaAngle,0,0,1);
-    magenta.matrix.scale(0.3, 0.3, 0.3);
-    magenta.matrix.translate(-0.5, 0, 0);
-    magenta.render();
+    // var magenta = new Cube();
+    // magenta.color = [1,0,1,1];
+    // magenta.matrix = yellowCoordinatesMat;
+    // magenta.matrix.translate(0, 0.65, 0);
+    // magenta.matrix.rotate(-g_magentaAngle,0,0,1);
+    // magenta.matrix.scale(0.3, 0.3, 0.3);
+    // magenta.matrix.translate(-0.5,0, -0.001);
+    // magenta.render();
 }
 
 var g_shapesList = [];
