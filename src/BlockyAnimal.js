@@ -24,13 +24,17 @@ let u_FragColor;
 let u_Size;
 let u_ModelMatrix;
 let u_GlobalRotateMatrix;
+let g_globalX = 0;
+let g_globalY = 0;
+let g_globalZ = 0;
+let g_origin = [0, 0];
 
 function setupWebGL() {
     // Retrieve <canvas> element
-    canvas = document.getElementById('webgl', { preserveDrawingBuffer: true });
+    canvas = document.getElementById('webgl');
 
     // Get the rendering context for WebGL
-    gl = getWebGLContext(canvas);
+    gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
 
     if (!gl) {
         console.log('Failed to get the rendering context for WebGL');
@@ -81,7 +85,6 @@ function connectVariablestoGLSL() {
 const POINT = 0;
 const TRIANGLE = 1;
 const CIRCLE = 2;
-const PICTURE = 3;
 
 let g_selectedColor = [1.0, 1.0, 1.0, 1.0];
 let g_selectedSize = 5;
@@ -117,7 +120,8 @@ function main() {
     addActionsforHTMLUI();
 
     // Register function (event handler) to be called on a mouse press
-    canvas.onmousedown = click;
+    // canvas.onmousedown = click;
+    canvas.onmousedown = originCoords;
 
     canvas.onmousemove = function(ev) { if (ev.buttons == 1) { click(ev) } };
 
@@ -129,37 +133,29 @@ function main() {
 var g_shapesList = [];
 
 function click(ev) {
-    let [x, y] = convertCoordinatesEventToGL(ev);
-
-    let point;
-    if (g_selectedType == POINT) {
-        point = new Point();
-    }
-    else if (g_selectedType == TRIANGLE) {
-        point = new Triangle();
-    }
-    else {
-        point = new Circle();
-        point.segments = g_segment;
-    }
-
-    point.position = [x, y];
-    point.color = g_selectedColor.slice();
-    point.size = g_selectedSize;
-    g_shapesList.push(point);
+    let coordinates = convertCoordinatesEventToGL(ev);
+    g_globalX = g_globalX - coordinates[0]*360; // used to be minus for both
+    g_globalY = g_globalY - coordinates[1]*360;
 
     renderAllShapes();
+}
+
+function originCoords(ev) {
+    var x = ev.clientX;
+    var y = ev.clientY;
+    g_origin = [x, y];
 }
 
 function convertCoordinatesEventToGL(ev) {
     var x = ev.clientX;
     var y = ev.clientY;
-    var rect = ev.target.getBoundingClientRect();
 
-    x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
-    y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+    let temp = [x,y];
+    x = (x - g_origin[0])/400;
+    y = (y - g_origin[1])/400;
+    g_origin = temp;
 
-    return([x, y]);
+    return([x,y]);
 }
 
 function updateAnimationAngles() {
@@ -184,6 +180,7 @@ function renderAllShapes() {
 
     // Colors
     var PINK = [0.830, 0.681, 0.681, 1.0];
+    var WHITE = [1.0, 1.0, 1.0, 1.0];
 
 
     // Bunny head
@@ -235,36 +232,51 @@ function renderAllShapes() {
 
     // Back haunches
     var haunchL = new Cube();
-    haunchL.matrix.scale(0.13, 0.27, 0.3);
-    haunchL.matrix.translate(-2, -2.5, 0);
-    // haunchL.matrix.rotate();
+    haunchL.matrix.scale(0.13, 0.4, 0.3);
+    haunchL.matrix.translate(-2, -1.4, -0.5);
+    haunchL.matrix.rotate(12, 1, 0, 0);
     haunchL.render();
 
     var haunchR = new Cube();
+    haunchR.matrix.scale(0.13, 0.4, 0.3);
+    haunchR.matrix.translate(1, -1.4, -0.5);
+    haunchR.matrix.rotate(12, 1, 0, 0);
+    haunchR.render();
 
     // Legs
     var frontlegL = new Cube();
-    frontlegL.color = PINK;
+    // frontlegL.color = PINK;
     frontlegL.matrix.scale(0.13, 0.5, 0.13);
-    frontlegL.matrix.translate(-2, -1.4, -5); 
-    frontlegL.matrix.rotate(10, 0, 1, 0);               // tilt legs forward?
+    frontlegL.matrix.translate(-2, -1.3, -5); 
+    frontlegL.matrix.rotate(12, 1, 0, 0);
     frontlegL.render();
 
     var frontlegR = new Cube();
-    frontlegR.color = PINK;
+    // frontlegR.color = PINK;
     frontlegR.matrix.scale(0.13, 0.5, 0.13);
-    frontlegR.matrix.translate(1, -1.4, -5); 
-    frontlegR.matrix.rotate(10, 0, 1, 0);
+    frontlegR.matrix.translate(1, -1.3, -5);
+    frontlegR.matrix.rotate(12, 1, 0, 0);
     frontlegR.render();
 
 
     var backlegL = new Cube();
+    backlegL.matrix.scale(0.13, 0.5, 0.13);
+    backlegL.matrix.translate(-2, -1.4, -0.5);
+    backlegL.matrix.rotate(45, -2, 1.4, 0);
+    backlegL.render();
 
     var backlegR = new Cube();
+    backlegR.matrix.scale(0.13, 0.5, 0.13);
+    backlegR.matrix.translate(1, -1.4, -0.5);
+    backlegR.matrix.rotate(90, 1, 0, 0);
+    backlegR.render();
 
     var tail = new Cube();
-    
-
+    tail.color = WHITE;
+    tail.matrix.scale(0.2, 0.2, 0.2);
+    tail.matrix.translate(-0.5, -1.3, 0.5);
+    tail.matrix.rotate(20, 1, 0, 0);
+    tail.render();
     
     // var notbody = new Cube();
     // notbody.color = [1.0, 0.0, 0.0, 1.0];
@@ -274,7 +286,6 @@ function renderAllShapes() {
     // notbody.render();
 
     
-
     // Test cube
     // var magenta = new Cube();
     // magenta.color = [1,0,1,1];
