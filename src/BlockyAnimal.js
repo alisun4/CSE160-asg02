@@ -89,24 +89,27 @@ const CIRCLE = 2;
 let g_selectedColor = [1.0, 1.0, 1.0, 1.0];
 let g_selectedSize = 5;
 let g_selectedType = POINT;
-let g_globalAngle = 0;
-let g_yellowAngle = 0;
+let g_headAngle = 0;
+let g_leftAngle = 0;
+let g_rightAngle = 0;
 let g_magentaAngle = 0;
-let g_yellowAnimation = false;
+let g_headAnimation = false;
 let g_magentaAnimation = false;
 
 // Set up actions for the HTML UI elements
 function addActionsforHTMLUI() {
 
     // Animation On/Off
-    document.getElementById('animationYellowOffButton').onclick = function() { g_yellowAnimation = false; };
-    document.getElementById('animationYellowOnButton').onclick = function() { g_yellowAnimation = true; };
+    document.getElementById('rotateHeadOffButton').onclick = function() { g_headAnimation = false; };
+    document.getElementById('rotateHeadOnButton').onclick = function() { g_headAnimation = true; };
 
     document.getElementById('animationMagentaOffButton').onclick = function() { g_magentaAnimation = false; };
     document.getElementById('animationMagentaOnButton').onclick = function() { g_magentaAnimation = true; };
 
     // Size slider
-    document.getElementById('rotateYellow').addEventListener('mousemove', function () { g_yellowAngle = this.value; renderAllShapes() });
+    document.getElementById('rotateHead').addEventListener('mousemove', function () { g_headAngle = this.value; renderAllShapes() });
+    document.getElementById('kickLeft').addEventListener('mousemove', function () { g_leftAngle = this.value; renderAllShapes() });
+    document.getElementById('kickRight').addEventListener('mousemove', function () { g_rightAngle = this.value; renderAllShapes() });
     document.getElementById('rotateMagenta').addEventListener('mousemove', function () { g_magentaAngle = this.value; renderAllShapes() });
     document.getElementById('angleSlide').addEventListener('mousemove', function() { g_globalAngle = this.value; renderAllShapes(); });
     
@@ -121,16 +124,34 @@ function main() {
 
     // Register function (event handler) to be called on a mouse press
     // canvas.onmousedown = click;
-    canvas.onmousedown = originCoords;
+    canvas.onmousedown = origin;
 
     canvas.onmousemove = function(ev) { if (ev.buttons == 1) { click(ev) } };
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
+    requestAnimationFrame(tick);
+
+}
+
+var g_startTime = performance.now()/1000.0;
+var g_seconds=performance.now()/1000.0-g_startTime;
+
+function tick() {
+    g_seconds=performance.now()/1000.0-g_startTime;
+    updateAnimationAngles();
+    renderAllShapes();
+    requestAnimationFrame(tick);
 }
 
 var g_shapesList = [];
+
+function origin(ev) {
+    var x = ev.clientX;
+    var y = ev.clientY;
+    g_origin = [x, y];
+}
 
 function click(ev) {
     let coordinates = convertCoordinatesEventToGL(ev);
@@ -138,12 +159,6 @@ function click(ev) {
     g_globalY = g_globalY - coordinates[1]*360;
 
     renderAllShapes();
-}
-
-function originCoords(ev) {
-    var x = ev.clientX;
-    var y = ev.clientY;
-    g_origin = [x, y];
 }
 
 function convertCoordinatesEventToGL(ev) {
@@ -159,8 +174,8 @@ function convertCoordinatesEventToGL(ev) {
 }
 
 function updateAnimationAngles() {
-    if (g_yellowAnimation) {
-        g_yellowAngle = (45 * Math.sin(g_seconds));
+    if (g_headAnimation) {
+        g_headAngle = (45 * Math.sin(g_seconds));
     }
 
     if (g_magentaAnimation) {
@@ -179,6 +194,7 @@ function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // Colors
+    var BROWN = [0.610, 0.603, 0.531, 1.0];
     var PINK = [0.830, 0.681, 0.681, 1.0];
     var WHITE = [1.0, 1.0, 1.0, 1.0];
 
@@ -186,22 +202,26 @@ function renderAllShapes() {
     // Bunny head
 
     var head = new Cube();
-    head.color = [1, 1, 0, 1];
+    head.color = BROWN;
     head.matrix.scale(0.45, 0.4, 0.4);
     head.matrix.translate(-0.5, -0.1, -2.125);
-    // head.matrix.rotate(-g_yellowAngle, 1, 1, 0);
+    head.matrix.rotate(-g_headAngle, 0, 1, 0);
+    head.matrix.rotate(45*Math.sin(g_headAngle), 0, 1, 0);
     head.render();
+
+    // Eyes
+    
 
     // Ears
     var ear1 = new Cube();
-    ear1.color = [1, 1, 0, 1];
+    ear1.color = BROWN;
     ear1.matrix.scale(0.11, 0.6, 0.1);
     ear1.matrix.translate(-1.5, 0.25, -5.75);
     ear1.matrix.rotate(-20, 1, 45, 0);
     ear1.render();
 
     var ear2 = new Cube();
-    ear2.color = [1, 1, 0, 1];
+    ear2.color = BROWN;
     ear2.matrix.scale(0.11, 0.6, 0.1);
     ear2.matrix.translate(0.5, 0.25, -5.75);
     ear2.matrix.rotate(20, 1, 45, 0);
@@ -210,17 +230,17 @@ function renderAllShapes() {
     var nose = new Cube();
     nose.color = PINK;
     nose.matrix.scale(0.1, 0.1, 0.1);
-    nose.matrix.translate(-0.5, 1.5, -9);
+    nose.matrix.translate(-0.5, 0.9, -9);
     nose.render();
 
     
     // Body
 
     var body = new Cube();
-    body.color = [1, 1, 0, 1];
+    body.color = BROWN;
+    body.matrix.rotate(12, 1, 0, 0);
     body.matrix.scale(0.5, 0.4, 0.8);
-    body.matrix.translate(-0.5, -0.7, -0.8);
-    body.matrix.rotate(12, 1, 0, 0);                    // why is it so pointy
+    body.matrix.translate(-0.5, -1, -0.8);
     // body.matrix.setTranslate(0, -0.5, 0.0);
     // body.matrix.rotate(-5, 1, 0, 0);
     // body.matrix.rotate(-g_yellowAngle, 0, 0, 1);
@@ -232,50 +252,56 @@ function renderAllShapes() {
 
     // Back haunches
     var haunchL = new Cube();
-    haunchL.matrix.scale(0.13, 0.4, 0.3);
-    haunchL.matrix.translate(-2, -1.4, -0.5);
+    haunchL.color = BROWN;
     haunchL.matrix.rotate(12, 1, 0, 0);
+    haunchL.matrix.rotate(g_leftAngle, 1, 0, 0);
+    haunchL.matrix.scale(0.15, 0.4, 0.3);
+    haunchL.matrix.translate(-2, -1.4, -0.5);
     haunchL.render();
 
     var haunchR = new Cube();
-    haunchR.matrix.scale(0.13, 0.4, 0.3);
-    haunchR.matrix.translate(1, -1.4, -0.5);
+    haunchR.color = BROWN;
     haunchR.matrix.rotate(12, 1, 0, 0);
+    haunchR.matrix.rotate(g_rightAngle, 1, 0, 0);
+    haunchR.matrix.scale(0.15, 0.4, 0.3);
+    haunchR.matrix.translate(1, -1.4, -0.5);
     haunchR.render();
 
     // Legs
     var frontlegL = new Cube();
-    // frontlegL.color = PINK;
-    frontlegL.matrix.scale(0.13, 0.5, 0.13);
-    frontlegL.matrix.translate(-2, -1.3, -5); 
+    frontlegL.color = BROWN;
     frontlegL.matrix.rotate(12, 1, 0, 0);
+    frontlegL.matrix.scale(0.15, 0.5, 0.13);
+    frontlegL.matrix.translate(-2, -1.5, -5); 
     frontlegL.render();
 
     var frontlegR = new Cube();
-    // frontlegR.color = PINK;
-    frontlegR.matrix.scale(0.13, 0.5, 0.13);
-    frontlegR.matrix.translate(1, -1.3, -5);
+    frontlegR.color = BROWN;
     frontlegR.matrix.rotate(12, 1, 0, 0);
+    frontlegR.matrix.scale(0.15, 0.5, 0.13);
+    frontlegR.matrix.translate(1, -1.5, -5);
     frontlegR.render();
 
 
     var backlegL = new Cube();
-    backlegL.matrix.scale(0.13, 0.5, 0.13);
-    backlegL.matrix.translate(-2, -1.4, -0.5);
-    backlegL.matrix.rotate(45, -2, 1.4, 0);
+    backlegL.color = BROWN;
+    backlegL.matrix.translate(-0.3, -0.55, -0.48);
+    backlegL.matrix.rotate(90, 1, 0, 0);
+    backlegL.matrix.scale(0.15, 0.5, 0.075);
     backlegL.render();
 
     var backlegR = new Cube();
-    backlegR.matrix.scale(0.13, 0.5, 0.13);
-    backlegR.matrix.translate(1, -1.4, -0.5);
+    backlegR.color = BROWN;
+    backlegR.matrix.translate(0.15, -0.55, -0.48);
     backlegR.matrix.rotate(90, 1, 0, 0);
+    backlegR.matrix.scale(0.15, 0.5, 0.075);
     backlegR.render();
 
     var tail = new Cube();
     tail.color = WHITE;
     tail.matrix.scale(0.2, 0.2, 0.2);
-    tail.matrix.translate(-0.5, -1.3, 0.5);
-    tail.matrix.rotate(20, 1, 0, 0);
+    tail.matrix.translate(-0.5, -1.6, 0);
+    tail.matrix.rotate(12, 1, 0, 0);
     tail.render();
     
     // var notbody = new Cube();
